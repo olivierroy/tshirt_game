@@ -12,7 +12,9 @@ const game = {
     score: 0,
     keys: {},
     gravity: 0.6,
-    friction: 0.8
+    friction: 0.8,
+    currentLevel: 0,
+    totalLevels: 3
 };
 
 // Player object
@@ -33,39 +35,135 @@ const player = {
     maxSize: 2.5
 };
 
-// Platforms
-const platforms = [
-    { x: 0, y: 550, width: 800, height: 50, color: '#8B4513' }, // Ground
-    { x: 150, y: 450, width: 120, height: 20, color: '#A0522D' },
-    { x: 350, y: 380, width: 100, height: 20, color: '#A0522D' },
-    { x: 520, y: 320, width: 120, height: 20, color: '#A0522D' },
-    { x: 300, y: 250, width: 100, height: 20, color: '#A0522D' },
-    { x: 100, y: 180, width: 120, height: 20, color: '#A0522D' },
-    { x: 500, y: 150, width: 150, height: 20, color: '#A0522D' },
-    { x: 680, y: 100, width: 100, height: 20, color: '#A0522D' } // Platform to reach flag
+// Level definitions
+const levels = [
+    // Level 1
+    {
+        playerStart: { x: 50, y: 300 },
+        platforms: [
+            { x: 0, y: 550, width: 800, height: 50, color: '#8B4513' }, // Ground
+            { x: 150, y: 450, width: 120, height: 20, color: '#A0522D' },
+            { x: 350, y: 380, width: 100, height: 20, color: '#A0522D' },
+            { x: 520, y: 320, width: 120, height: 20, color: '#A0522D' },
+            { x: 300, y: 250, width: 100, height: 20, color: '#A0522D' },
+            { x: 100, y: 180, width: 120, height: 20, color: '#A0522D' },
+            { x: 500, y: 150, width: 150, height: 20, color: '#A0522D' },
+            { x: 680, y: 100, width: 100, height: 20, color: '#A0522D' }
+        ],
+        tshirts: [
+            { x: 200, y: 410, width: 25, height: 25, collected: false, color: '#FF1744' },
+            { x: 400, y: 340, width: 25, height: 25, collected: false, color: '#2196F3' },
+            { x: 570, y: 280, width: 25, height: 25, collected: false, color: '#4CAF50' },
+            { x: 350, y: 210, width: 25, height: 25, collected: false, color: '#FF9800' },
+            { x: 150, y: 140, width: 25, height: 25, collected: false, color: '#9C27B0' },
+            { x: 550, y: 110, width: 25, height: 25, collected: false, color: '#FFEB3B' },
+            { x: 450, y: 500, width: 25, height: 25, collected: false, color: '#00BCD4' },
+            { x: 700, y: 500, width: 25, height: 25, collected: false, color: '#E91E63' },
+            { x: 710, y: 60, width: 25, height: 25, collected: false, color: '#FF5722' }
+        ],
+        goal: { x: 720, y: 80, width: 40, height: 70, reached: false }
+    },
+    // Level 2 - More challenging with wider gaps
+    {
+        playerStart: { x: 50, y: 500 },
+        platforms: [
+            { x: 0, y: 550, width: 200, height: 50, color: '#8B4513' }, // Ground (shorter)
+            { x: 600, y: 550, width: 200, height: 50, color: '#8B4513' }, // Ground right
+            { x: 250, y: 480, width: 80, height: 20, color: '#A0522D' },
+            { x: 450, y: 420, width: 100, height: 20, color: '#A0522D' },
+            { x: 100, y: 360, width: 90, height: 20, color: '#A0522D' },
+            { x: 600, y: 340, width: 120, height: 20, color: '#A0522D' },
+            { x: 300, y: 280, width: 80, height: 20, color: '#A0522D' },
+            { x: 500, y: 220, width: 100, height: 20, color: '#A0522D' },
+            { x: 150, y: 160, width: 90, height: 20, color: '#A0522D' },
+            { x: 350, y: 120, width: 120, height: 20, color: '#A0522D' },
+            { x: 650, y: 80, width: 130, height: 20, color: '#A0522D' }
+        ],
+        tshirts: [
+            { x: 100, y: 510, width: 25, height: 25, collected: false, color: '#FF1744' },
+            { x: 280, y: 440, width: 25, height: 25, collected: false, color: '#2196F3' },
+            { x: 480, y: 380, width: 25, height: 25, collected: false, color: '#4CAF50' },
+            { x: 130, y: 320, width: 25, height: 25, collected: false, color: '#FF9800' },
+            { x: 640, y: 300, width: 25, height: 25, collected: false, color: '#9C27B0' },
+            { x: 320, y: 240, width: 25, height: 25, collected: false, color: '#FFEB3B' },
+            { x: 530, y: 180, width: 25, height: 25, collected: false, color: '#00BCD4' },
+            { x: 180, y: 120, width: 25, height: 25, collected: false, color: '#E91E63' },
+            { x: 380, y: 80, width: 25, height: 25, collected: false, color: '#FF5722' },
+            { x: 700, y: 40, width: 25, height: 25, collected: false, color: '#CDDC39' }
+        ],
+        goal: { x: 690, y: 30, width: 40, height: 70, reached: false }
+    },
+    // Level 3 - Most challenging with complex platforming
+    {
+        playerStart: { x: 50, y: 500 },
+        platforms: [
+            { x: 0, y: 550, width: 150, height: 50, color: '#8B4513' }, // Ground left
+            { x: 650, y: 550, width: 150, height: 50, color: '#8B4513' }, // Ground right
+            { x: 300, y: 550, width: 100, height: 50, color: '#8B4513' }, // Ground middle
+            { x: 80, y: 470, width: 70, height: 20, color: '#A0522D' },
+            { x: 220, y: 470, width: 70, height: 20, color: '#A0522D' },
+            { x: 550, y: 470, width: 70, height: 20, color: '#A0522D' },
+            { x: 400, y: 400, width: 90, height: 20, color: '#A0522D' },
+            { x: 150, y: 360, width: 80, height: 20, color: '#A0522D' },
+            { x: 600, y: 360, width: 100, height: 20, color: '#A0522D' },
+            { x: 350, y: 290, width: 70, height: 20, color: '#A0522D' },
+            { x: 50, y: 250, width: 90, height: 20, color: '#A0522D' },
+            { x: 500, y: 240, width: 80, height: 20, color: '#A0522D' },
+            { x: 250, y: 180, width: 100, height: 20, color: '#A0522D' },
+            { x: 600, y: 150, width: 90, height: 20, color: '#A0522D' },
+            { x: 100, y: 110, width: 80, height: 20, color: '#A0522D' },
+            { x: 400, y: 80, width: 120, height: 20, color: '#A0522D' },
+            { x: 680, y: 50, width: 100, height: 20, color: '#A0522D' }
+        ],
+        tshirts: [
+            { x: 100, y: 510, width: 25, height: 25, collected: false, color: '#FF1744' },
+            { x: 110, y: 430, width: 25, height: 25, collected: false, color: '#2196F3' },
+            { x: 250, y: 430, width: 25, height: 25, collected: false, color: '#4CAF50' },
+            { x: 430, y: 360, width: 25, height: 25, collected: false, color: '#FF9800' },
+            { x: 180, y: 320, width: 25, height: 25, collected: false, color: '#9C27B0' },
+            { x: 640, y: 320, width: 25, height: 25, collected: false, color: '#FFEB3B' },
+            { x: 380, y: 250, width: 25, height: 25, collected: false, color: '#00BCD4' },
+            { x: 80, y: 210, width: 25, height: 25, collected: false, color: '#E91E63' },
+            { x: 530, y: 200, width: 25, height: 25, collected: false, color: '#FF5722' },
+            { x: 280, y: 140, width: 25, height: 25, collected: false, color: '#CDDC39' },
+            { x: 630, y: 110, width: 25, height: 25, collected: false, color: '#3F51B5' },
+            { x: 720, y: 10, width: 25, height: 25, collected: false, color: '#F44336' }
+        ],
+        goal: { x: 720, y: 5, width: 40, height: 70, reached: false }
+    }
 ];
 
-// T-Shirts
-const tshirts = [
-    { x: 200, y: 410, width: 25, height: 25, collected: false, color: '#FF1744' },
-    { x: 400, y: 340, width: 25, height: 25, collected: false, color: '#2196F3' },
-    { x: 570, y: 280, width: 25, height: 25, collected: false, color: '#4CAF50' },
-    { x: 350, y: 210, width: 25, height: 25, collected: false, color: '#FF9800' },
-    { x: 150, y: 140, width: 25, height: 25, collected: false, color: '#9C27B0' },
-    { x: 550, y: 110, width: 25, height: 25, collected: false, color: '#FFEB3B' },
-    { x: 450, y: 500, width: 25, height: 25, collected: false, color: '#00BCD4' },
-    { x: 700, y: 500, width: 25, height: 25, collected: false, color: '#E91E63' },
-    { x: 710, y: 60, width: 25, height: 25, collected: false, color: '#FF5722' } // T-shirt near flag
-];
+// Current level data (will be loaded from levels array)
+let platforms = [];
+let tshirts = [];
+let goal = {};
 
-// Goal flag
-const goal = {
-    x: 720,
-    y: 80,
-    width: 40,
-    height: 70,
-    reached: false
-};
+// Load a level
+function loadLevel(levelIndex) {
+    const level = levels[levelIndex];
+
+    // Deep copy level data to avoid modifying the original
+    platforms = JSON.parse(JSON.stringify(level.platforms));
+    tshirts = JSON.parse(JSON.stringify(level.tshirts));
+    goal = JSON.parse(JSON.stringify(level.goal));
+
+    // Reset player position
+    player.x = level.playerStart.x;
+    player.y = level.playerStart.y;
+    player.velocityX = 0;
+    player.velocityY = 0;
+    player.onGround = false;
+
+    // Update UI to show current level
+    updateLevelUI();
+}
+
+function updateLevelUI() {
+    const levelDisplay = document.getElementById('currentLevel');
+    if (levelDisplay) {
+        levelDisplay.textContent = game.currentLevel + 1;
+    }
+}
 
 // Input handling
 document.addEventListener('keydown', (e) => {
@@ -90,9 +188,22 @@ document.getElementById('restartBtn').addEventListener('click', () => {
     location.reload();
 });
 
+// Next level button
+document.getElementById('nextLevelBtn').addEventListener('click', () => {
+    nextLevel();
+});
+
 function startGame() {
     game.started = true;
     document.getElementById('instructions').style.display = 'none';
+}
+
+function nextLevel() {
+    game.currentLevel++;
+    loadLevel(game.currentLevel);
+    game.over = false;
+    goal.reached = false;
+    document.getElementById('gameOver').classList.add('hidden');
 }
 
 // Update player size based on t-shirts collected
@@ -468,6 +579,24 @@ function endGame() {
     const tshirtBonus = game.tshirtCount * 1000;
     game.score += tshirtBonus;
 
+    // Check if there are more levels
+    const hasMoreLevels = game.currentLevel < game.totalLevels - 1;
+
+    // Update game over screen
+    const gameOverTitle = document.getElementById('gameOverTitle');
+    const restartBtn = document.getElementById('restartBtn');
+    const nextLevelBtn = document.getElementById('nextLevelBtn');
+
+    if (hasMoreLevels) {
+        gameOverTitle.textContent = 'Level Complete!';
+        restartBtn.style.display = 'none';
+        nextLevelBtn.style.display = 'inline-block';
+    } else {
+        gameOverTitle.textContent = 'Game Complete!';
+        restartBtn.style.display = 'inline-block';
+        nextLevelBtn.style.display = 'none';
+    }
+
     // Show game over screen
     document.getElementById('finalTshirts').textContent = game.tshirtCount;
     document.getElementById('finalSize').textContent = game.tshirtCount + ' 👕';
@@ -481,6 +610,9 @@ function gameLoop() {
     draw();
     requestAnimationFrame(gameLoop);
 }
+
+// Initialize game - load first level
+loadLevel(0);
 
 // Start the game loop
 gameLoop();
