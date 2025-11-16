@@ -41,7 +41,8 @@ const platforms = [
     { x: 520, y: 320, width: 120, height: 20, color: '#A0522D' },
     { x: 300, y: 250, width: 100, height: 20, color: '#A0522D' },
     { x: 100, y: 180, width: 120, height: 20, color: '#A0522D' },
-    { x: 500, y: 150, width: 150, height: 20, color: '#A0522D' }
+    { x: 500, y: 150, width: 150, height: 20, color: '#A0522D' },
+    { x: 680, y: 100, width: 100, height: 20, color: '#A0522D' } // Platform to reach flag
 ];
 
 // T-Shirts
@@ -53,7 +54,8 @@ const tshirts = [
     { x: 150, y: 140, width: 25, height: 25, collected: false, color: '#9C27B0' },
     { x: 550, y: 110, width: 25, height: 25, collected: false, color: '#FFEB3B' },
     { x: 450, y: 500, width: 25, height: 25, collected: false, color: '#00BCD4' },
-    { x: 700, y: 500, width: 25, height: 25, collected: false, color: '#E91E63' }
+    { x: 700, y: 500, width: 25, height: 25, collected: false, color: '#E91E63' },
+    { x: 710, y: 60, width: 25, height: 25, collected: false, color: '#FF5722' } // T-shirt near flag
 ];
 
 // Goal flag
@@ -95,26 +97,11 @@ function startGame() {
 
 // Update player size based on t-shirts collected
 function updatePlayerSize() {
-    // Store the bottom position before size change
-    const bottomY = player.y + player.height;
-
-    const sizeMultiplier = Math.min(1 + (player.tshirts * 0.2), player.maxSize);
-    player.width = player.baseWidth * sizeMultiplier;
-    player.height = player.baseHeight * sizeMultiplier;
-
-    // Maintain the bottom position after size change (prevents position reset)
-    player.y = bottomY - player.height;
-
-    // Update speed (gets slower when bigger/heavier)
-    player.speed = 5 - (player.tshirts * 0.15);
-    player.jumpPower = 12 - (player.tshirts * 0.3);
-
-    // Ensure minimum speed and jump power
-    player.speed = Math.max(player.speed, 2);
-    player.jumpPower = Math.max(player.jumpPower, 8);
+    // Character no longer grows - just update the UI to show t-shirt count
+    // Speed and jump power remain constant
 
     // Update UI
-    document.getElementById('playerSize').textContent = sizeMultiplier.toFixed(1) + 'x';
+    document.getElementById('playerSize').textContent = player.tshirts + ' 👕';
 }
 
 // Collision detection
@@ -478,13 +465,12 @@ function endGame() {
     game.over = true;
 
     // Calculate final score
-    const tshirtBonus = game.tshirtCount * 500;
-    const sizeBonus = Math.floor((player.width / player.baseWidth) * 1000);
-    game.score += tshirtBonus + sizeBonus;
+    const tshirtBonus = game.tshirtCount * 1000;
+    game.score += tshirtBonus;
 
     // Show game over screen
     document.getElementById('finalTshirts').textContent = game.tshirtCount;
-    document.getElementById('finalSize').textContent = (player.width / player.baseWidth).toFixed(1) + 'x';
+    document.getElementById('finalSize').textContent = game.tshirtCount + ' 👕';
     document.getElementById('finalScore').textContent = game.score;
     document.getElementById('gameOver').classList.remove('hidden');
 }
