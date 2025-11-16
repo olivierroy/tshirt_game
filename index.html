@@ -11,6 +11,10 @@
         <div id="ui">
             <div id="stats">
                 <div class="stat">
+                    <span class="label">Level:</span>
+                    <span id="currentLevel">1</span>
+                </div>
+                <div class="stat">
                     <span class="label">T-Shirts:</span>
                     <span id="tshirtCount">0</span>
                 </div>
@@ -29,16 +33,18 @@
             <h2>How to Play</h2>
             <p><strong>Arrow Keys / WASD:</strong> Move left and right</p>
             <p><strong>Space / Up Arrow / W:</strong> Jump</p>
-            <p><strong>Goal:</strong> Collect t-shirts to grow bigger and reach the flag!</p>
+            <p><strong>Goal:</strong> Collect t-shirts and reach the flag!</p>
+            <p><strong>Complete all 3 levels to win!</strong></p>
             <p>Press any key to start</p>
         </div>
         <div id="gameOver" class="hidden">
-            <h1>Level Complete!</h1>
+            <h1 id="gameOverTitle">Level Complete!</h1>
             <div id="finalStats">
                 <p>T-Shirts Collected: <span id="finalTshirts">0</span></p>
                 <p>Final Size: <span id="finalSize">1.0x</span></p>
                 <p>Total Score: <span id="finalScore">0</span></p>
             </div>
+            <button id="nextLevelBtn" style="display: none;">Next Level</button>
             <button id="restartBtn">Play Again</button>
         </div>
     </div>
