@@ -95,9 +95,15 @@ function startGame() {
 
 // Update player size based on t-shirts collected
 function updatePlayerSize() {
+    // Store the bottom position before size change
+    const bottomY = player.y + player.height;
+
     const sizeMultiplier = Math.min(1 + (player.tshirts * 0.2), player.maxSize);
     player.width = player.baseWidth * sizeMultiplier;
     player.height = player.baseHeight * sizeMultiplier;
+
+    // Maintain the bottom position after size change (prevents position reset)
+    player.y = bottomY - player.height;
 
     // Update speed (gets slower when bigger/heavier)
     player.speed = 5 - (player.tshirts * 0.15);
@@ -276,70 +282,176 @@ function drawTshirt(x, y, width, height, color) {
 
 function drawPlayer() {
     const centerX = player.x + player.width / 2;
-    const centerY = player.y + player.height / 2;
+    const headSize = player.width * 0.6;
+    const headY = player.y;
+    const bodyY = player.y + headSize;
+    const bodyWidth = player.width * 0.5;
+    const bodyHeight = player.height * 0.4;
+    const legHeight = player.height * 0.35;
 
-    // Draw collected t-shirts on player (layered effect)
-    const collectedTshirts = tshirts.filter(t => t.collected);
-    collectedTshirts.forEach((tshirt, index) => {
-        const offset = index * 2;
-        ctx.fillStyle = tshirt.color;
-        ctx.globalAlpha = 0.6;
-        ctx.fillRect(
-            player.x - offset,
-            player.y - offset,
-            player.width + offset * 2,
-            player.height + offset * 2
-        );
-    });
-    ctx.globalAlpha = 1;
-
-    // Player body
-    ctx.fillStyle = player.color;
-    ctx.fillRect(player.x, player.y, player.width, player.height);
-
-    // Face
-    ctx.fillStyle = '#FFE4C4';
-    const faceSize = player.width * 0.6;
+    // Legs
+    ctx.fillStyle = '#4169E1'; // Blue pants
+    const legWidth = bodyWidth * 0.4;
+    // Left leg
     ctx.fillRect(
-        player.x + (player.width - faceSize) / 2,
-        player.y + player.height * 0.15,
-        faceSize,
-        faceSize
+        centerX - bodyWidth * 0.35,
+        bodyY + bodyHeight,
+        legWidth,
+        legHeight
+    );
+    // Right leg
+    ctx.fillRect(
+        centerX + bodyWidth * 0.05,
+        bodyY + bodyHeight,
+        legWidth,
+        legHeight
+    );
+
+    // Shoes
+    ctx.fillStyle = '#654321';
+    ctx.fillRect(
+        centerX - bodyWidth * 0.35,
+        bodyY + bodyHeight + legHeight - player.height * 0.08,
+        legWidth,
+        player.height * 0.08
+    );
+    ctx.fillRect(
+        centerX + bodyWidth * 0.05,
+        bodyY + bodyHeight + legHeight - player.height * 0.08,
+        legWidth,
+        player.height * 0.08
+    );
+
+    // Body (torso) - will be covered by t-shirts
+    ctx.fillStyle = '#FFE4C4'; // Skin tone
+    ctx.fillRect(
+        centerX - bodyWidth / 2,
+        bodyY,
+        bodyWidth,
+        bodyHeight
+    );
+
+    // Draw collected t-shirts on torso (layered/stacked effect)
+    const collectedTshirts = tshirts.filter(t => t.collected);
+    if (collectedTshirts.length > 0) {
+        // Draw the most recent t-shirt on top
+        const topTshirt = collectedTshirts[collectedTshirts.length - 1];
+        ctx.fillStyle = topTshirt.color;
+
+        // T-shirt body
+        ctx.fillRect(
+            centerX - bodyWidth / 2,
+            bodyY,
+            bodyWidth,
+            bodyHeight
+        );
+
+        // T-shirt sleeves
+        ctx.fillRect(
+            centerX - bodyWidth * 0.75,
+            bodyY,
+            bodyWidth * 0.25,
+            bodyHeight * 0.4
+        );
+        ctx.fillRect(
+            centerX + bodyWidth * 0.5,
+            bodyY,
+            bodyWidth * 0.25,
+            bodyHeight * 0.4
+        );
+
+        // Show stacked t-shirts effect with stripes
+        collectedTshirts.forEach((tshirt, index) => {
+            if (index < collectedTshirts.length - 1) {
+                const stripeY = bodyY + bodyHeight - (index + 1) * (bodyHeight * 0.15);
+                ctx.fillStyle = tshirt.color;
+                ctx.fillRect(
+                    centerX - bodyWidth / 2,
+                    stripeY,
+                    bodyWidth,
+                    bodyHeight * 0.1
+                );
+            }
+        });
+    }
+
+    // Arms
+    ctx.fillStyle = '#FFE4C4'; // Skin tone
+    const armWidth = player.width * 0.15;
+    const armHeight = bodyHeight * 0.8;
+    // Left arm
+    ctx.fillRect(
+        centerX - bodyWidth / 2 - armWidth,
+        bodyY + bodyHeight * 0.1,
+        armWidth,
+        armHeight
+    );
+    // Right arm
+    ctx.fillRect(
+        centerX + bodyWidth / 2,
+        bodyY + bodyHeight * 0.1,
+        armWidth,
+        armHeight
+    );
+
+    // Head
+    ctx.fillStyle = '#FFE4C4'; // Skin tone
+    ctx.fillRect(
+        centerX - headSize / 2,
+        headY,
+        headSize,
+        headSize
+    );
+
+    // Hair
+    ctx.fillStyle = '#8B4513'; // Brown hair
+    ctx.fillRect(
+        centerX - headSize / 2,
+        headY,
+        headSize,
+        headSize * 0.3
     );
 
     // Eyes
     ctx.fillStyle = '#000';
-    const eyeSize = player.width * 0.1;
+    const eyeSize = headSize * 0.15;
     ctx.fillRect(
-        player.x + player.width * 0.3,
-        player.y + player.height * 0.3,
+        centerX - headSize * 0.25,
+        headY + headSize * 0.4,
         eyeSize,
         eyeSize
     );
     ctx.fillRect(
-        player.x + player.width * 0.6,
-        player.y + player.height * 0.3,
+        centerX + headSize * 0.1,
+        headY + headSize * 0.4,
         eyeSize,
         eyeSize
     );
 
     // Smile
     ctx.strokeStyle = '#000';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = Math.max(1, player.width * 0.05);
     ctx.beginPath();
     ctx.arc(
         centerX,
-        player.y + player.height * 0.45,
-        player.width * 0.2,
+        headY + headSize * 0.6,
+        headSize * 0.25,
         0,
         Math.PI
     );
     ctx.stroke();
 
-    // Outline
+    // Outline for character
     ctx.strokeStyle = '#000';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(player.x, player.y, player.width, player.height);
+    ctx.lineWidth = Math.max(1, player.width * 0.05);
+
+    // Head outline
+    ctx.strokeRect(centerX - headSize / 2, headY, headSize, headSize);
+
+    // Body outline (if wearing t-shirt)
+    if (collectedTshirts.length > 0) {
+        ctx.strokeRect(centerX - bodyWidth / 2, bodyY, bodyWidth, bodyHeight);
+    }
 }
 
 function drawFlag(x, y, width, height) {
